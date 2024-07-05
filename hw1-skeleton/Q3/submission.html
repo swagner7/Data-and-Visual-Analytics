@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Running Total of TMDb Movies by Year</title>
+		<script type="text/javascript" src="lib/d3/d3.min.js"></script>
+        <script src="lib/d3-fetch/d3-fetch.min.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+			// parameters for web page
+			var xSize = 960;
+			var ySize = 500;
+			var bar_padding = 5;
+			var top_padding = 50;
+			var bottom_padding = 50;
+			var left_padding = 50;
+			var right_padding = 50;
+
+			// set up SVG
+			var svg = d3.select("body").append("svg").attr("width", xSize).attr("height", ySize);
+
+			// load data
+			var q3_data = [];
+			d3.csv("q3.csv", function (data) {
+				q3_data.push(data);
+			}).then(function (d) {
+				console.log(q3_data);
+
+				// scale x axis
+				var min_year = q3_data[0].year;
+				var max_year = q3_data[q3_data.length - 1].year;
+
+				var x_scale = d3.scaleTime()
+					.domain([new Date(min_year, 0, 1), new Date(max_year, 0, 1)])
+				 	.range([left_padding, xSize - right_padding]);
+
+				var x_axis = d3.axisBottom(x_scale)
+					.ticks(q3_data.length / 3);
+
+				// scale y axis
+				var max_running_total = q3_data[q3_data.length - 1].running_total;
+
+				var y_scale = d3.scaleLinear()
+					.domain([0, max_running_total])
+					.range([ySize - bottom_padding, top_padding]);
+
+				var y_axis = d3.axisLeft(y_scale)
+					.ticks(q3_data.length / 5);
+
+				svg.selectAll("rect")
+				.data(q3_data)
+				.enter()
+				.append("rect")
+				.attr("x", function (d) {
+					// x location
+					return x_scale(new Date(d.year));
+				})
+				.attr("y", function (d) {
+					// y location
+					return y_scale(d.running_total);
+				})
+				// width for bar
+				.attr("width", xSize / q3_data.length - bar_padding)
+
+				// height for bar
+				.attr("height", function (d) {
+					return ySize - bottom_padding -y_scale(d.running_total);
+				})
+				.attr("fill", function(d) {
+					// color
+					return "rgb(" + d.running_total / 50  + ", 60, 60)";
+				});
+
+
+				// create x axis
+				svg.append("g")
+			        .attr("id", "x_axis")
+					.attr("class", "axis")
+					.attr("transform", "translate(0," + (ySize - bottom_padding) + ")")
+					.call(x_axis);
+
+				// create x axis label
+				svg.append("text")
+				    .attr("id", "x_axis_label")
+					.attr("x", (xSize / 2))
+					.attr("y", ySize)
+					.style("font-size", "20px")
+					.text("Year");
+
+				// create y axis
+				svg.append("g")
+				    .attr("id", "y_axis")
+					.attr("class", "axis")
+					.attr("transform", "translate(" + left_padding + ",0)")
+					.call(y_axis);
+
+				// create y axis label
+				svg.append("text")
+				    .attr("id", "y_axis_label")
+					.attr("x", 0)
+					.attr("y", ySize/2 )
+					.attr("rotate", "rotate(90)")
+					.style("font-size", "20px")
+					.text("Running Total");
+
+				// GT username
+				svg.append("text")
+				    .attr("id", "credit")
+					.attr("x", xSize - right_padding * 1.5)
+					.attr("y", ySize)
+					.attr("text-anchor", "middle")
+					.style("font-size", "15px")
+					.text("swagner38");
+
+				// title for plot
+				svg.append("text")
+				    .attr("id", "title")
+					.attr("x", (xSize / 2))
+					.attr("y", top_padding / 3 * 2)
+					.attr("text-anchor", "middle")
+					.style("font-size", "20px")
+					.text("Running Total of TMDb Movies by Year");
+			});
+		</script>
+	</body>
+</html>
