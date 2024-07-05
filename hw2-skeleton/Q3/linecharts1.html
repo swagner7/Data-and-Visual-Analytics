@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<head>
+  <title>Line Charts</title>
+  <meta charset="utf-8">
+<style>
+  .x-axis {
+    background-color: red;
+  }
+</style>
+</head>
+
+<body>
+  <script type="text/javascript" src="../lib/d3.v5.min.js"></script>
+  <script>
+    var margin = { top: 30, right: 120, bottom: 30, left: 50 },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    tooltip = { width: 100, height: 100, x: 10, y: -30 };
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var dateFormatter = d3.timeFormat("%m-%Y");
+
+    const parseDate = d3.timeParse("%Y-%m-%d");
+
+    d3.csv("boardgame_ratings.csv").then(function(data) {
+      var data = data.map(function(d) {return {date: d['date'], Catan: +d['Catan=count'], Codenames: +d['Codenames=count'], Dominion: +d['Dominion=count']
+        , 'Terraforming Mars': +d['Terraforming Mars=count'], Gloomhaven: +d['Gloomhaven=count'], 'Magic: The Gathering': +d['Magic: The Gathering=count']
+        , Dixit: +d['Dixit=count'], Monopoly: +d['Monopoly=count']}})
+
+      data.forEach(function(d) {d.date = parseDate(d.date);});
+
+      console.table(data);
+
+      let xScale = d3.scaleTime()
+           .domain([
+                d3.min(data, function(d) { return d.date; }),
+                d3.max(data, function(d) { return d.date; })
+            ])
+           .range([0, width]);
+
+      let yScale = d3.scaleLinear()
+           .domain([0, d3.max(data, function(d) { return d.Catan; })])
+           .range([height, 0]);
+
+      var xAxis = d3.axisBottom()
+          .scale(xScale)
+          .tickFormat(dateFormatter);
+
+      var yAxis = d3.axisLeft()
+          .scale(yScale)
+          .tickFormat(d3.format("$.2f"));
+
+      var line = d3.line()
+          .x(function(d) { return xScale(d.date); })
+          .y(function(d) { return yScale(d.Monopoly); });
+
+      svg.append("g")
+          .attr("class", "x-axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")
+          .attr("class", "y axis")
+          .style("fill", "black")
+          .call(yAxis)
+          .append("text")
+          .text("Number of Ratings")
+          .attr("y", 6)
+          .attr("transform", "rotate(-90)")
+          .attr("dy", ".71em")
+          .style("text-anchor", "end");
+
+
+      svg.append("path")
+          .datum(data)
+          .attr("class", "line")
+          .attr("stroke", "black")
+          .attr("stroke-width", 1.5)
+          .attr("fill", "none")
+          .attr("d", line);
+
+    });
+
+  </script>
+
+    <text id="title-a" x="500" y="100">Number of Ratings 2016-2020</text>
+    <g id="plot-a">
+      <g id="lines-a">
+      </g>
+      <g id="x-axis-a">
+        <text id="x-axis-label" x="500" y="600">Date</text>
+      </g>
+      <g id="y-axis-a">
+        <text id="y-axis-label">Number of Ratings</text>
+      </g>
+    </g>
+
+
+  <div id='signature'>swagner38</div>
+</body>

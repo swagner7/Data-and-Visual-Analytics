@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>Multi Line Chart</title>
+<script type="text/javascript" src="../lib/d3.v5.min.js"></script>
+<!--<link rel="stylesheet" type="text/css" href="styles.css">-->
+<style></style>
+</head>
+<body>
+<div id="container" class="svg-container"></div>
+<script>
+//------------------------1. PREPARATION------------------------//
+//-----------------------------SVG------------------------------//
+var margin = {top: 20, right: 10, bottom: 20, left: 10};
+var width = 960 - margin.left - margin.right;
+var height = 500 - margin.top - margin.bottom;
+const padding = 5;
+const adj = 30;
+var colorArray = [d3.schemeCategory10, d3.schemeAccent];
+var colorScheme = d3.scaleOrdinal(colorArray[0]);
+
+// we are appending SVG first
+const svga = d3.select("div#container").append("svg")
+    .attr("id", "svg-a")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "-"
+          + adj + " -"
+          + adj + " "
+          + (width + adj *3) + " "
+          + (height + adj*3))
+    .style("padding", padding)
+    .style("margin", margin)
+    .classed("svg-content", true);
+
+//-----------------------------DATA-----------------------------//
+const timeConv = d3.timeParse("%Y-%m-%d");
+let dataset = d3.csv("boardgame_ratings.csv");
+
+dataset.then(function(data) {
+    var slices = data.columns.slice(1).map(function(id) {
+        return {
+            id: id,
+            values: data.map(function(d){
+                return {
+                    date: timeConv(d.date),
+                    measurement: +d[id]
+                };
+            })
+        };
+    });
+
+//----------------------------SCALES----------------------------//
+const xScale = d3.scaleTime().range([0,width]);
+const yScale = d3.scaleLinear().rangeRound([height, 0]);
+
+xScale.domain(d3.extent(data, function(d){
+    return timeConv(d.date)}));
+
+yScale.domain([(0), d3.max(slices, function(c) {
+    return d3.max(c.values, function(d) {
+        return d.measurement + 4; });
+        })
+    ]);
+
+//-----------------------------AXES-----------------------------//
+const yaxis = d3.axisLeft()
+    .ticks(10)
+    .scale(yScale);
+
+const xaxis = d3.axisBottom()
+    .ticks(d3.timeMonth.every(3))
+    .tickFormat(d3.timeFormat('%b %y'))
+    .scale(xScale);
+
+//----------------------------LINES-----------------------------//
+const line = d3.line()
+    .x(function(d) { return xScale(d.date); })
+    .y(function(d) { return yScale(d.measurement); });
+
+let id = 0;
+const ids = function () {
+    return "line-"+id++;
+}
+
+//---------------------------TOOLTIP----------------------------//
+
+
+//-------------------------2. DRAWING---------------------------//
+plota = svga.append("g")
+    .attr("id", "plot-a");
+
+svga.append("text")
+    .attr("id", "title-a")
+    .text("Number of Ratings 2016-2020")
+    .style("text-anchor", "center")
+
+linesa = plota.append("g")
+    .attr("id", "lines-a")
+
+plota.append("g")
+    .attr("id", "x-axis-a")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xaxis)
+    .append("text")
+    .style("text-anchor", "end")
+    .text("Month");
+
+plota.append("g")
+    .attr("id", "y-axis-a")
+    .attr("class", "axis")
+    .call(yaxis)
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("dy", ".75em")
+    .attr("y", 6)
+    .style("text-anchor", "end")
+    .text("Num of Ratings");
+
+
+//----------------------------LINES-----------------------------//
+const lines = linesa.selectAll("lines")
+    .data(slices)
+    .enter()
+    .append("g")
+    .attr("id", ids);
+
+    lines.append("path")
+    .attr("id", ids)
+    .attr("class", ids)
+    .attr("stroke", colorScheme(0))
+    .attr("fill", "none")
+    .attr("d", function(d) { return line(d.values); });
+
+    lines.append("text")
+    .attr("class","series_label")
+    .datum(function(d) {
+        return {
+            id: d.id,
+            value: d.values[d.values.length - 1]}; })
+    .attr("transform", function(d) {
+            return "translate(" + (xScale(d.value.date) + 10)
+            + "," + (yScale(d.value.measurement) + 5 )+ ")"; })
+    .attr("x", 5)
+    .text(function(d) { return d.id.substr(0, d.id.indexOf('=')); });
+
+
+//------ REMOVE UNNECESSARY LINES ------------------------------//
+d3.selectAll('#line-1').remove();
+d3.selectAll('#line-3').remove();
+d3.selectAll('#line-5').remove();
+d3.selectAll('#line-7').remove();
+d3.selectAll('#line-9').remove();
+d3.selectAll('#line-11').remove();
+d3.selectAll('#line-13').remove();
+d3.selectAll('#line-15').remove();
+
+
+//-------------- PART B ------------------------//
+//---------------------------------------------//
+
+// we are appending SVG first
+const svgb = d3.select("div#container").append("svg")
+    .attr("id", "svg-b")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "-"
+          + adj + " -"
+          + adj + " "
+          + (width + adj *3) + " "
+          + (height + adj*3))
+    .style("padding", padding)
+    .style("margin", margin)
+    .classed("svg-content", true);
+
+//-----------------------------AXES-----------------------------//
+const yaxisb = d3.axisLeft()
+    .ticks(10)
+    .scale(yScale);
+
+const xaxisb = d3.axisBottom()
+    .ticks(d3.timeMonth.every(3))
+    .tickFormat(d3.timeFormat('%b %y'))
+    .scale(xScale);
+
+//----------------------------LINES-----------------------------//
+const lineb = d3.line()
+    .x(function(d) { return xScale(d.date); })
+    .y(function(d) { return yScale(d.measurement); });
+
+let idb = 0;
+const idsb = function () {
+    return "line-"+idb++;
+}
+
+
+//-------------------------2. DRAWING---------------------------//
+plotb = svgb.append("g")
+    .attr("id", "plot-b");
+
+svgb.append("text")
+    .attr("id", "title-b")
+    .text("Number of Ratings 2016-2020")
+    .style("text-anchor", "center")
+
+linesb = plotb.append("g")
+    .attr("id", "lines-b")
+
+plotb.append("g")
+    .attr("id", "x-axis-b")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xaxis)
+    .append("text")
+    .style("text-anchor", "end")
+    .text("Month");
+
+plotb.append("g")
+    .attr("id", "y-axis-b")
+    .attr("class", "axis")
+    .call(yaxis)
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("dy", ".75em")
+    .attr("y", 6)
+    .style("text-anchor", "end")
+    .text("Num of Ratings");
+
+//----------------------------LINES-----------------------------//
+const lines2 = linesb.selectAll("lines2")
+    .data(slices)
+    .enter()
+    .append("g")
+    .attr("id", idsb);
+
+    lines2.append("path")
+    .attr("id", idsb)
+    .attr("class", ids)
+    .attr("stroke", colorScheme(0))
+    .attr("fill", "none")
+    .attr("d", function(d) { return line(d.values); });
+
+    lines2.append("text")
+    .attr("class","series_label")
+    .datum(function(d) {
+        return {
+            id: d.id,
+            value: d.values[d.values.length - 1]}; })
+    .attr("transform", function(d) {
+            return "translate(" + (xScale(d.value.date) + 10)
+            + "," + (yScale(d.value.measurement) + 5 )+ ")"; })
+    .attr("x", 5)
+    .text(function(d) { return d.id.substr(0, d.id.indexOf('=')); });
+
+
+//------ REMOVE UNNECESSARY LINES ------------------------------//
+d3.selectAll('#line-1').remove();
+d3.selectAll('#line-3').remove();
+d3.selectAll('#line-5').remove();
+d3.selectAll('#line-7').remove();
+d3.selectAll('#line-9').remove();
+d3.selectAll('#line-11').remove();
+d3.selectAll('#line-13').remove();
+d3.selectAll('#line-15').remove();
+
+
+//--------------- PART C1 ------------------------------------//
+//---------------------------------------------//
+
+// we are appending SVG first
+const svgc1 = d3.select("div#container").append("svg")
+.attr("id", "svg-c-1")
+.attr("preserveAspectRatio", "xMinYMin meet")
+.attr("viewBox", "-"
+      + adj + " -"
+      + adj + " "
+      + (width + adj *3) + " "
+      + (height + adj*3))
+.style("padding", padding)
+.style("margin", margin)
+.classed("svg-content", true);
+
+
+
+//----------------------------SCALES----------------------------//
+const yScalec1 = d3.scaleSqrt().rangeRound([height, 0]);
+
+xScale.domain(d3.extent(data, function(d){
+    return timeConv(d.date)}));
+
+yScalec1.domain([(0), d3.max(slices, function(c) {
+    return d3.max(c.values, function(d) {
+        return d.measurement + 4; });
+        })
+    ]);
+
+
+//-----------------------------AXES-----------------------------//
+const yaxisc1 = d3.axisLeft()
+    .ticks(10)
+    .scale(yScalec1);
+
+const xaxisc1 = d3.axisBottom()
+    .ticks(d3.timeMonth.every(3))
+    .tickFormat(d3.timeFormat('%b %y'))
+    .scale(xScale);
+
+//----------------------------LINES-----------------------------//
+const linec1 = d3.line()
+    .x(function(d) { return xScale(d.date); })
+    .y(function(d) { return yScalec1(d.measurement); });
+
+let idc1 = 0;
+const idsc1 = function () {
+    return "line-"+idc1++;
+}
+
+
+//-------------------------2. DRAWING---------------------------//
+plotc1 = svgc1.append("g")
+    .attr("id", "plot-c-1");
+
+svgc1.append("text")
+    .attr("id", "title-c-1")
+    .text("Number of Ratings 2016-2020")
+    .style("text-anchor", "center")
+
+linesc1 = plotc1.append("g")
+    .attr("id", "lines-c-1")
+
+plotc1.append("g")
+    .attr("id", "x-axis-c-1")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xaxis)
+    .append("text")
+    .style("text-anchor", "end")
+    .text("Month");
+
+plotc1.append("g")
+    .attr("id", "y-axis-c-1")
+    .attr("class", "axis")
+    .call(yaxis)
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("dy", ".75em")
+    .attr("y", 6)
+    .style("text-anchor", "end")
+    .text("Num of Ratings");
+
+
+//----------------------------LINES-----------------------------//
+const lines3 = linesc1.selectAll("lines3")
+    .data(slices)
+    .enter()
+    .append("g")
+    .attr("id", idsc1);
+
+    lines3.append("path")
+    .attr("id", idsc1)
+    .attr("class", ids)
+    .attr("stroke", colorScheme(0))
+    .attr("fill", "none")
+    .attr("d", function(d) { return line(d.values); });
+
+    lines3.append("text")
+    .attr("class","series_label")
+    .datum(function(d) {
+        return {
+            id: d.id,
+            value: d.values[d.values.length - 1]}; })
+    .attr("transform", function(d) {
+            return "translate(" + (xScale(d.value.date) + 10)
+            + "," + (yScalec1(d.value.measurement) + 5 )+ ")"; })
+    .attr("x", 5)
+    .text(function(d) { return d.id.substr(0, d.id.indexOf('=')); });
+
+
+//------ REMOVE UNNECESSARY LINES ------------------------------//
+d3.selectAll('#line-1').remove();
+d3.selectAll('#line-3').remove();
+d3.selectAll('#line-5').remove();
+d3.selectAll('#line-7').remove();
+d3.selectAll('#line-9').remove();
+d3.selectAll('#line-11').remove();
+d3.selectAll('#line-13').remove();
+d3.selectAll('#line-15').remove();
+
+
+//--------------- PART C2 ------------------------------------//
+//---------------------------------------------//
+
+// we are appending SVG first
+const svgc2 = d3.select("div#container").append("svg")
+.attr("id", "svg-c-2")
+.attr("preserveAspectRatio", "xMinYMin meet")
+.attr("viewBox", "-"
+      + adj + " -"
+      + adj + " "
+      + (width + adj *3) + " "
+      + (height + adj*3))
+.style("padding", padding)
+.style("margin", margin)
+.classed("svg-content", true);
+
+
+//----------------------------SCALES----------------------------//
+const yScalec2 = d3.scaleSqrt().rangeRound([height, 0]);
+
+xScale.domain(d3.extent(data, function(d){
+    return timeConv(d.date)}));
+
+yScalec2.domain([(0), d3.max(slices, function(c) {
+    return d3.max(c.values, function(d) {
+        return d.measurement + 4; });
+        })
+    ]);
+
+
+//-----------------------------AXES-----------------------------//
+const yaxisc2 = d3.axisLeft()
+    .ticks(10)
+    .scale(yScalec1);
+
+const xaxisc2 = d3.axisBottom()
+    .ticks(d3.timeMonth.every(3))
+    .tickFormat(d3.timeFormat('%b %y'))
+    .scale(xScale);
+
+//----------------------------LINES-----------------------------//
+const linec2 = d3.line()
+    .x(function(d) { return xScale(d.date); })
+    .y(function(d) { return yScalec1(d.measurement); });
+
+let idc2 = 0;
+const idsc2 = function () {
+    return "line-"+idc2++;
+}
+
+
+//-------------------------2. DRAWING---------------------------//
+plotc2 = svgc2.append("g")
+    .attr("id", "plot-c-2");
+
+svgc2.append("text")
+    .attr("id", "title-c-2")
+    .text("Number of Ratings 2016-2020")
+    .style("text-anchor", "center")
+
+linesc2 = plotc2.append("g")
+    .attr("id", "lines-c-2")
+
+plotc2.append("g")
+    .attr("id", "x-axis-c-2")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xaxis)
+    .append("text")
+    .style("text-anchor", "end")
+    .text("Month");
+
+plotc2.append("g")
+    .attr("id", "y-axis-c-2")
+    .attr("class", "axis")
+    .call(yaxis)
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("dy", ".75em")
+    .attr("y", 6)
+    .style("text-anchor", "end")
+    .text("Num of Ratings");
+
+
+//----------------------------LINES-----------------------------//
+const lines4 = linesc2.selectAll("lines4")
+    .data(slices)
+    .enter()
+    .append("g")
+    .attr("id", idsc2);
+
+    lines4.append("path")
+    .attr("id", idsc1)
+    .attr("class", ids)
+    .attr("stroke", colorScheme(0))
+    .attr("fill", "none")
+    .attr("d", function(d) { return line(d.values); });
+
+    lines4.append("text")
+    .attr("class","series_label")
+    .datum(function(d) {
+        return {
+            id: d.id,
+            value: d.values[d.values.length - 1]}; })
+    .attr("transform", function(d) {
+            return "translate(" + (xScale(d.value.date) + 10)
+            + "," + (yScalec2(d.value.measurement) + 5 )+ ")"; })
+    .attr("x", 5)
+    .text(function(d) { return d.id.substr(0, d.id.indexOf('=')); });
+
+
+//------ REMOVE UNNECESSARY LINES ------------------------------//
+d3.selectAll('#line-1').remove();
+d3.selectAll('#line-3').remove();
+d3.selectAll('#line-5').remove();
+d3.selectAll('#line-7').remove();
+d3.selectAll('#line-9').remove();
+d3.selectAll('#line-11').remove();
+d3.selectAll('#line-13').remove();
+d3.selectAll('#line-15').remove();
+
+
+});
+</script>
+</body>

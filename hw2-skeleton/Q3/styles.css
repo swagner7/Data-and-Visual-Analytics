@@ -1,0 +1,66 @@
+/* AXES */
+/* ticks */
+.axis line{
+stroke: #706f6f;
+stroke-width: 0.5;
+shape-rendering: crispEdges;
+}
+
+/* axis contour */
+.axis path {
+stroke: #706f6f;
+stroke-width: 0.7;
+shape-rendering: crispEdges;
+}
+
+/* axis text */
+.axis text {
+fill: #2b2929;
+font-family: Georgia;
+font-size: 120%;
+}
+
+/* LINE CHART */
+path.line-16 {
+fill: none;
+stroke: #ed3700;
+}
+
+path.line-2 {
+fill: none;
+stroke: #9c9c9c;
+}
+
+
+path.line-4 {
+fill: none;
+stroke: #9c9c9c;
+}
+
+
+path.line-6 {
+fill: none;
+stroke: #9c9c9c;
+}
+
+
+path.line-8 {
+fill: none;
+stroke: #9c9c9c;
+}
+
+path.line-10 {
+fill: none;
+stroke: #9c9c9c;
+}
+
+path.line-12 {
+fill: none;
+stroke: #9c9c9c;
+}
+
+.serie_label {
+fill: #2b2929;
+font-family: Georgia;
+font-size: 80%;
+}
